@@ -24,6 +24,18 @@ Resources:
       FunctionName: !Sub "${AWS::StackName}-hello-function-${AWS::AccountId}"
       CodeUri: hello/
       Handler: app.lambda_handler
+      # Policies:
+      #   - Statement:
+      #       # これがなければ話は簡単
+      #       - Effect: Allow
+      #         Action:
+      #           - s3:PutObject
+      #           - s3:GetObject
+      #           - s3:ListBucket
+      #           - s3:DeleteObject
+      #         Resource:
+      #           - !Sub "${TheS3Bucket.Arn}/*"
+      #           - !GetAtt TheS3Bucket.Arn
 
   HelloFunctionLogGroup:
     Type: AWS::Logs::LogGroup
@@ -48,11 +60,11 @@ Resources:
         BlockPublicPolicy: True
         IgnorePublicAcls: True
         RestrictPublicBuckets: True
-      # NotificationConfiguration:
-      #   LambdaConfigurations:
-      #     - Event: s3:ObjectCreated:Put
-      #       # Function: !GetAtt HelloFunction.Arn # 循環参照
-      #       Function: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-hello-function-${AWS::AccountId}"
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: s3:ObjectCreated:Put
+            # Function: !GetAtt HelloFunction.Arn # 循環参照
+            Function: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-hello-function-${AWS::AccountId}"
 
 Outputs:
   HelloFunction1:
