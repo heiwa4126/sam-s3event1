@@ -21,7 +21,7 @@ S3イベントをトリガにしてlambdaを起動する。
 ```bash
 ./1to0.sh  # template.yamlからtmp0.yaml(最初のデプロイ用テンプレート)を生成する
 sam build
-sam deploy -t tmp0.yaml --guided  # 2回目からは--guidedぬきでOK
+sam deploy -t tmp0.yaml -g  # 全部デフォルトで(returnキーを押すだけ)。2回目からは-g(--guided)ぬきで
 sam deploy
 ```
 
