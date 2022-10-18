@@ -1,3 +1,6 @@
+# S3イベントでlambdaを起動するサンプル。
+# CFn風だがSAM的ではない。
+
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
@@ -8,6 +11,9 @@ Description: >
 Globals:
   Function:
     Timeout: 3
+    Runtime: python3.9
+    Architectures:
+      - x86_64
   Api:
     OpenApiVersion: 3.0.3
 
@@ -18,15 +24,6 @@ Resources:
       FunctionName: !Sub "${AWS::StackName}-hello-function-${AWS::AccountId}"
       CodeUri: hello/
       Handler: app.lambda_handler
-      Runtime: python3.9
-      Architectures:
-        - x86_64
-      # Events:
-      #   Hello:
-      #     Type: Api
-      #     Properties:
-      #       Path: /hello
-      #       Method: get
 
   HelloFunctionLogGroup:
     Type: AWS::Logs::LogGroup
@@ -35,21 +32,34 @@ Resources:
       RetentionInDays: 7
       LogGroupName: !Sub "/aws/lambda/${HelloFunction}"
 
-  # TheS3Bucket:
-  #   Type: AWS::S3::Bucket
-  #   Properties:
-  #     PublicAccessBlockConfiguration:
-  #       BlockPublicAcls: True
-  #       BlockPublicPolicy: True
-  #       IgnorePublicAcls: True
-  #       RestrictPublicBuckets: True
-  #   NotificationConfiguration:
-  #     LambdaConfigurations:
-  #       - Event: s3:ObjectCreated:Put
-  #         # Function: !GetAtt HelloFunction.Arn # 循環参照
-  #         Function: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-hello-function-${AWS::AccountId}"
+  HelloFunctionPermission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        Action: lambda:InvokeFunction
+        FunctionName: !GetAtt HelloFunction.Arn
+        Principal: s3.amazonaws.com
+        SourceArn: !GetAtt TheS3Bucket.Arn
+
+  TheS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+      # NotificationConfiguration:
+      #   LambdaConfigurations:
+      #     - Event: s3:ObjectCreated:Put
+      #       # Function: !GetAtt HelloFunction.Arn # 循環参照
+      #       Function: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-hello-function-${AWS::AccountId}"
 
 Outputs:
-  HelloFunction:
+  HelloFunction1:
     Description: "Hello Lambda Function ARN"
     Value: !GetAtt HelloFunction.Arn
+  HelloFunction2:
+    Description: "Hello Lambda Function ARN"
+    Value: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-hello-function-${AWS::AccountId}"
+  TheS3BucketName:
+    Value: !Ref TheS3Bucket
