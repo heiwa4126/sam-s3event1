@@ -63,16 +63,12 @@ Resources:
       NotificationConfiguration:
         LambdaConfigurations:
           - Event: s3:ObjectCreated:Put
-            # Function: !GetAtt HelloFunction.Arn # 循環参照
+            # Function: !GetAtt HelloFunction.Arn # 循環依存
             Function: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-hello-function-${AWS::AccountId}"
             # 実際にはHelloFunctionが出来ていないとNotificationの設定ができない。deployすると死ぬ
 
 Outputs:
-  # HelloFunction0:
-  #   Description: "Hello Lambda Function ARN"
-  #   Value: !GetAtt HelloFunction.Arn
-  HelloFunction:
-    Description: "Hello Lambda Function ARN"
-    Value: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-hello-function-${AWS::AccountId}"
+  HelloFunctionName:
+    Value: !Ref HelloFunction
   TheS3BucketName:
     Value: !Ref TheS3Bucket
