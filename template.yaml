@@ -15,6 +15,7 @@ Resources:
   HelloFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-hello-function-${AWS::AccountId}"
       CodeUri: hello/
       Handler: app.lambda_handler
       Runtime: python3.9
@@ -33,6 +34,20 @@ Resources:
     Properties:
       RetentionInDays: 7
       LogGroupName: !Sub "/aws/lambda/${HelloFunction}"
+
+  # TheS3Bucket:
+  #   Type: AWS::S3::Bucket
+  #   Properties:
+  #     PublicAccessBlockConfiguration:
+  #       BlockPublicAcls: True
+  #       BlockPublicPolicy: True
+  #       IgnorePublicAcls: True
+  #       RestrictPublicBuckets: True
+  #   NotificationConfiguration:
+  #     LambdaConfigurations:
+  #       - Event: s3:ObjectCreated:Put
+  #         # Function: !GetAtt HelloFunction.Arn # 循環参照
+  #         Function: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-hello-function-${AWS::AccountId}"
 
 Outputs:
   HelloFunction:
