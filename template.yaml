@@ -60,12 +60,12 @@ Resources:
         BlockPublicPolicy: True
         IgnorePublicAcls: True
         RestrictPublicBuckets: True
-      NotificationConfiguration:
-        LambdaConfigurations:
-          - Event: s3:ObjectCreated:Put
-            # Function: !GetAtt HelloFunction.Arn # 循環依存
-            Function: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-hello-function-${AWS::AccountId}"
-            # 実際にはHelloFunctionが出来ていないとNotificationの設定ができない。deployすると死ぬ
+      NotificationConfiguration:  #1#
+        LambdaConfigurations: #1#
+          - Event: s3:ObjectCreated:Put #1#
+            # Function: !GetAtt HelloFunction.Arn # 循環依存 #1#
+            Function: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-hello-function-${AWS::AccountId}" #1#
+            # 実際にはHelloFunctionが出来ていないとNotificationの設定ができない。deployすると死ぬ #1#
 
 Outputs:
   HelloFunctionName:

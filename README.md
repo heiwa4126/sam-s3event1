@@ -19,8 +19,9 @@ S3イベントをトリガにしてlambdaを起動する。
 # デプロイ
 
 ```bash
+./1to0.sh  # template.yamlからtmp0.yaml(最初のデプロイ用テンプレート)を生成する
 sam build
-sam deploy -t template0.yaml --guided  # 2回目からは--guidedぬきでOK
+sam deploy -t tmp0.yaml --guided  # 2回目からは--guidedぬきでOK
 sam deploy
 ```
 
@@ -59,7 +60,7 @@ sam delete --no-prompts
 # ポイント
 
 template.yaml も
-template0.yaml も
+tmp0.yaml も
 循環依存(circular dependency)があってはいけない。
 事前に [cfn-lint](https://github.com/aws-cloudformation/cfn-lint)でチェックしておくべき。
 
@@ -73,5 +74,6 @@ template0.yaml も
 
 template.yaml から
 template0.yaml を自動生成できるような工夫を考えること
+-> done. `1to0.sh`がそれ。
 
 あとTerraformではどうなのか確認すること。
