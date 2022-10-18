@@ -21,9 +21,12 @@ Resources:
   HelloFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-hello-function-${AWS::AccountId}"
       CodeUri: hello/
       Handler: app.lambda_handler
+      # なんと1回のデプロイでは作成できない例
+      # AWS::S3::Bucket NotificationConfiguration - AWS CloudFormation
+      # https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/aws-properties-s3-bucket-notificationconfig.html
+      # 冒頭のnote参照
       Policies:
         - Statement:
             # これがなければ話は簡単
@@ -36,6 +39,12 @@ Resources:
               Resource:
                 - !Sub "${TheS3Bucket.Arn}/*"
                 - !GetAtt TheS3Bucket.Arn
+      # Events:
+      #   S3Event:
+      #     Type: S3
+      #     Properties:
+      #       Bucket: !Ref TheS3Bucket
+      #       Events:  s3:ObjectCreated:Put
 
   HelloFunctionLogGroup:
     Type: AWS::Logs::LogGroup
@@ -43,14 +52,6 @@ Resources:
     Properties:
       RetentionInDays: 7
       LogGroupName: !Sub "/aws/lambda/${HelloFunction}"
-
-  HelloFunctionPermission:
-      Type: AWS::Lambda::Permission
-      Properties:
-        Action: lambda:InvokeFunction
-        FunctionName: !GetAtt HelloFunction.Arn
-        Principal: s3.amazonaws.com
-        SourceArn: !GetAtt TheS3Bucket.Arn
 
   TheS3Bucket:
     Type: AWS::S3::Bucket
@@ -60,19 +61,10 @@ Resources:
         BlockPublicPolicy: True
         IgnorePublicAcls: True
         RestrictPublicBuckets: True
-      # NotificationConfiguration:
-      #   LambdaConfigurations:
-      #     - Event: s3:ObjectCreated:Put
-      #       # Function: !GetAtt HelloFunction.Arn # 循環参照
-      #       Function: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-hello-function-${AWS::AccountId}"
-      #       # 実際にはHelloFunctionが出来ていないとNotificationの設定ができない。deployすると死ぬ
 
 Outputs:
-  # HelloFunction0:
-  #   Description: "Hello Lambda Function ARN"
-  #   Value: !GetAtt HelloFunction.Arn
   HelloFunction:
     Description: "Hello Lambda Function ARN"
-    Value: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-hello-function-${AWS::AccountId}"
+    Value: !GetAtt HelloFunction.Arn
   TheS3BucketName:
     Value: !Ref TheS3Bucket
